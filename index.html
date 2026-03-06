@@ -15,9 +15,8 @@
       --card-border: rgba(255, 255, 255, 0.1);
       --card-shadow: rgba(0, 0, 0, 0.2);
       --minmax-bg: rgba(0, 0, 0, 0.2);
-      --blob-opacity: 0.6;
       
-      /* Theme Button Variables */
+      /* Theme & Search Button Variables */
       --toggle-bg: rgba(255, 255, 255, 0.06);
       --toggle-border: rgba(255, 255, 255, 0.15);
       --toggle-hover: rgba(255, 255, 255, 0.12);
@@ -31,9 +30,8 @@
       --card-border: rgba(0, 0, 0, 0.08);
       --card-shadow: rgba(0, 0, 0, 0.06);
       --minmax-bg: rgba(0, 0, 0, 0.05);
-      --blob-opacity: 0.4;
       
-      /* Theme Button Variables */
+      /* Theme & Search Button Variables */
       --toggle-bg: rgba(0, 0, 0, 0.03);
       --toggle-border: rgba(0, 0, 0, 0.08);
       --toggle-hover: rgba(0, 0, 0, 0.06);
@@ -70,49 +68,7 @@
       align-items: center;
     }
 
-    /* --- LIQUID BACKGROUND --- */
-    .blob {
-      position: absolute;
-      border-radius: 50%;
-      filter: blur(50px);
-      z-index: -1;
-      opacity: var(--blob-opacity);
-      animation: float 10s infinite alternate ease-in-out;
-      transition: opacity 0.4s ease;
-    }
-
-    .blob-1 {
-      width: 200px;
-      height: 200px;
-      background: #4facfe;
-      top: -20px;
-      left: 10%;
-      animation-delay: 0s;
-    }
-
-    .blob-2 {
-      width: 250px;
-      height: 250px;
-      background: #cd9cf2;
-      bottom: -40px;
-      right: 10%;
-      animation-delay: -3s;
-    }
-
-    @keyframes float {
-      0% { transform: translate(0, 0) scale(1); }
-      100% { transform: translate(20px, -30px) scale(1.1); }
-    }
-
     /* --- GLASSMORPHIC CARD --- */
-    .cards-wrapper {
-      display: flex;
-      z-index: 1;
-      justify-content: center;
-      width: 100%;
-      margin-bottom: 24px;
-    }
-
     .card {
       position: relative; 
       background: var(--card-bg);
@@ -120,20 +76,82 @@
       -webkit-backdrop-filter: blur(16px);
       border: 1px solid var(--card-border);
       border-radius: 24px;
-      padding: 32px 24px 28px;
       width: 220px;
+      min-height: 260px;
       box-shadow: 0 8px 32px 0 var(--card-shadow);
+      transition: all 0.4s ease;
+      margin-bottom: 24px;
+    }
+
+    /* --- LIQUID BACKGROUND (STRICTLY INSIDE CARD) --- */
+    .card-background {
+      position: absolute;
+      inset: 0;
+      border-radius: inherit; /* Повторяет скругления карточки */
+      overflow: hidden; /* Обрезает пятна, выходящие за края карточки */
+      z-index: 0;
+    }
+
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(35px);
+      opacity: 0.6;
+      animation: float 8s infinite alternate ease-in-out;
+      transition: opacity 0.4s ease;
+    }
+
+    body.light-theme .blob {
+      opacity: 0.35; /* В светлой теме пятна мягче */
+    }
+
+    .blob-1 {
+      width: 140px;
+      height: 140px;
+      background: #4facfe;
+      top: -20px;
+      left: -20px;
+      animation-delay: 0s;
+    }
+
+    .blob-2 {
+      width: 160px;
+      height: 160px;
+      background: #cd9cf2;
+      bottom: -30px;
+      right: -20px;
+      animation-delay: -2s;
+    }
+
+    @keyframes float {
+      0% { transform: translate(0, 0) scale(1); }
+      100% { transform: translate(15px, -20px) scale(1.1); }
+    }
+
+    /* --- CONTENT INSIDE CARD --- */
+    .card-content {
+      position: relative;
+      z-index: 1; /* Содержимое поверх пятен */
       display: flex;
       flex-direction: column;
       align-items: center;
-      transition: all 0.4s ease;
+      padding: 60px 24px 28px; /* Отступ сверху для кнопок */
+      height: 100%;
     }
 
-    /* Intuitive UI Button Inside Card */
-    .theme-toggle {
+    /* --- CONTROLS (SEARCH & THEME) --- */
+    .controls-row {
       position: absolute;
-      top: 16px;
-      right: 16px;
+      top: 14px;
+      left: 14px;
+      right: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      z-index: 10;
+    }
+
+    .icon-btn {
       width: 30px;
       height: 30px;
       border-radius: 50%;
@@ -142,17 +160,112 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 14px;
+      font-size: 13px;
       cursor: pointer;
       transition: all 0.3s ease;
-      z-index: 10;
       color: var(--text-color);
+      flex-shrink: 0;
     }
 
-    .theme-toggle:hover {
+    .icon-btn:hover {
       background: var(--toggle-hover);
       transform: scale(1.1);
     }
+
+    /* Search Bar UI */
+    .search-container {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .search-wrapper {
+      display: flex;
+      align-items: center;
+      background: transparent;
+      border-radius: 15px;
+      transition: all 0.3s ease;
+      overflow: hidden;
+    }
+
+    .search-wrapper.active {
+      background: var(--toggle-bg);
+      border: 1px solid var(--toggle-border);
+      box-shadow: 0 4px 12px var(--card-shadow);
+    }
+
+    .search-wrapper.active .search-btn {
+      border: none;
+      background: transparent;
+      transform: scale(1); /* Убираем эффект hover когда открыто */
+    }
+
+    .search-input {
+      width: 0;
+      opacity: 0;
+      border: none;
+      outline: none;
+      background: transparent;
+      color: var(--text-color);
+      font-family: inherit;
+      font-size: 12px;
+      transition: all 0.3s ease;
+      padding: 0;
+    }
+
+    .search-wrapper.active .search-input {
+      width: 90px;
+      opacity: 1;
+      padding: 0 8px 0 2px;
+    }
+
+    .search-input::placeholder {
+      color: var(--text-color);
+      opacity: 0.5;
+    }
+
+    /* Search Dropdown */
+    .search-results {
+      position: absolute;
+      top: 36px;
+      left: 0;
+      width: 140px;
+      background: var(--bg-color);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--toggle-border);
+      border-radius: 12px;
+      display: none;
+      flex-direction: column;
+      max-height: 140px;
+      overflow-y: auto;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      padding: 6px;
+      z-index: 20;
+    }
+
+    .search-results.active {
+      display: flex;
+    }
+
+    .result-item {
+      font-size: 11px;
+      padding: 8px;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: background 0.2s;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .result-item:hover {
+      background: var(--toggle-hover);
+    }
+
+    /* Custom Scrollbar for results */
+    .search-results::-webkit-scrollbar { width: 4px; }
+    .search-results::-webkit-scrollbar-thumb { background: var(--toggle-border); border-radius: 4px; }
 
     /* Typography */
     .location-name {
@@ -162,18 +275,23 @@
       text-transform: uppercase;
       opacity: 0.9;
       margin-bottom: 6px;
+      text-align: center;
+      width: 100%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .date {
       font-size: 13px;
       font-weight: 300;
       opacity: 0.7;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
     }
 
     .weather-icon {
-      font-size: 56px;
-      margin-bottom: 16px;
+      font-size: 52px;
+      margin-bottom: 12px;
       text-shadow: 0 4px 16px rgba(0,0,0,0.1);
     }
 
@@ -209,23 +327,61 @@
       opacity: 0.8;
     }
 
-    /* Loader */
-    .loading {
-      font-size: 14px;
-      opacity: 0.7;
-      text-align: center;
-      width: 100%;
+    /* Loader inside card */
+    .loading-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.2);
+      backdrop-filter: blur(4px);
+      z-index: 5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-radius: inherit;
+      font-size: 13px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .loading-overlay.active {
+      opacity: 1;
+      pointer-events: all;
     }
   </style>
 </head>
 <body>
 
   <div class="widget-container">
-    <div class="blob blob-1"></div>
-    <div class="blob blob-2"></div>
 
-    <div class="cards-wrapper" id="cards-container">
-      <div class="loading">Loading weather data...</div>
+    <div class="card" id="weather-card">
+      
+      <div class="card-background">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+      </div>
+
+      <div class="controls-row">
+        <div class="search-container">
+          <div class="search-wrapper" id="search-wrapper">
+            <button class="icon-btn search-btn" onclick="toggleSearch()" title="Search location">🔍</button>
+            <input type="text" id="search-input" class="search-input" placeholder="City..." autocomplete="off" oninput="handleSearch(this.value)">
+          </div>
+          <div class="search-results" id="search-results"></div>
+        </div>
+        
+        <button class="icon-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle Theme">☀️</button>
+      </div>
+
+      <div class="loading-overlay" id="loader">Updating...</div>
+
+      <div class="card-content">
+        <div class="location-name" id="loc-name">Loading...</div>
+        <div class="date" id="current-date"></div>
+        <div class="weather-icon" id="w-icon">🌡️</div>
+        <div class="current-temp" id="c-temp">--°</div>
+        <div class="minmax-temp" id="m-temp">H: --° | L: --°</div>
+      </div>
+      
     </div>
 
     <div class="footer">Powered by templation.io</div>
@@ -241,7 +397,7 @@
       } else {
         document.body.classList.remove('light-theme');
       }
-      const btn = document.querySelector('.theme-toggle');
+      const btn = document.getElementById('theme-btn');
       if (btn) btn.textContent = isLightMode ? '🌙' : '☀️';
     }
 
@@ -253,13 +409,86 @@
 
     applyTheme();
 
-    // --- WEATHER LOGIC ---
-    const locations = [
-      { id: 'berlin', name: 'Berlin', lat: 52.5200, lon: 13.4050 }
-    ];
+    // --- SEARCH LOGIC ---
+    let searchTimeout;
+    
+    // Default location (Always Berlin on reload)
+    let currentLocation = { name: 'Berlin', lat: 52.5200, lon: 13.4050 };
 
+    window.toggleSearch = function() {
+      const wrapper = document.getElementById('search-wrapper');
+      const input = document.getElementById('search-input');
+      const results = document.getElementById('search-results');
+      
+      wrapper.classList.toggle('active');
+      
+      if (wrapper.classList.contains('active')) {
+        input.focus();
+      } else {
+        input.value = '';
+        results.classList.remove('active');
+        results.innerHTML = '';
+      }
+    };
+
+    window.handleSearch = async function(query) {
+      clearTimeout(searchTimeout);
+      const resultsContainer = document.getElementById('search-results');
+      
+      if (query.trim().length < 2) {
+        resultsContainer.classList.remove('active');
+        return;
+      }
+
+      // Delay API call until user stops typing
+      searchTimeout = setTimeout(async () => {
+        try {
+          const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=5&language=en&format=json`);
+          const data = await res.json();
+          
+          resultsContainer.innerHTML = '';
+          
+          if (data.results && data.results.length > 0) {
+            data.results.forEach(city => {
+              const div = document.createElement('div');
+              div.className = 'result-item';
+              // Display format: City, Country
+              div.textContent = `${city.name}${city.country ? ', ' + city.country : ''}`;
+              
+              div.onclick = () => {
+                currentLocation = { name: city.name, lat: city.latitude, lon: city.longitude };
+                toggleSearch(); // Close search bar
+                fetchWeather(); // Update weather
+              };
+              
+              resultsContainer.appendChild(div);
+            });
+            resultsContainer.classList.add('active');
+          } else {
+            const noRes = document.createElement('div');
+            noRes.className = 'result-item';
+            noRes.textContent = 'No results found';
+            resultsContainer.appendChild(noRes);
+            resultsContainer.classList.add('active');
+          }
+        } catch (e) {
+          console.error('Search error', e);
+        }
+      }, 500); // 500ms debounce
+    };
+
+    // Close search if clicked outside
+    document.addEventListener('click', (e) => {
+      const searchContainer = document.querySelector('.search-container');
+      const results = document.getElementById('search-results');
+      const wrapper = document.getElementById('search-wrapper');
+      if (!searchContainer.contains(e.target) && wrapper.classList.contains('active')) {
+        toggleSearch();
+      }
+    });
+
+    // --- WEATHER LOGIC ---
     const dateOptions = { weekday: 'short', month: 'short', day: 'numeric' };
-    const todayDate = new Date().toLocaleDateString('en-US', dateOptions);
 
     function getWeatherIcon(code) {
       if (code === 0) return '☀️'; 
@@ -273,45 +502,40 @@
     }
 
     async function fetchWeather() {
-      const container = document.getElementById('cards-container');
-      
-      if (container.querySelector('.loading')) {
-        container.innerHTML = ''; 
-      }
+      const loader = document.getElementById('loader');
+      loader.classList.add('active'); // Show updating state
 
-      for (const loc of locations) {
-        try {
-          const url = `https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}&current_weather=true&daily=temperature_2m_max,temperature_2m_min&timezone=auto`;
-          const response = await fetch(url);
-          const data = await response.json();
+      try {
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${currentLocation.lat}&longitude=${currentLocation.lon}&current_weather=true&daily=temperature_2m_max,temperature_2m_min&timezone=auto`;
+        const response = await fetch(url);
+        const data = await response.json();
 
-          const currentTemp = Math.round(data.current_weather.temperature);
-          const maxTemp = Math.round(data.daily.temperature_2m_max[0]);
-          const minTemp = Math.round(data.daily.temperature_2m_min[0]);
-          const weatherCode = data.current_weather.weathercode;
-          const icon = getWeatherIcon(weatherCode);
-          
-          const themeIcon = isLightMode ? '🌙' : '☀️';
+        const currentTemp = Math.round(data.current_weather.temperature);
+        const maxTemp = Math.round(data.daily.temperature_2m_max[0]);
+        const minTemp = Math.round(data.daily.temperature_2m_min[0]);
+        const weatherCode = data.current_weather.weathercode;
+        const icon = getWeatherIcon(weatherCode);
+        
+        const todayDate = new Date().toLocaleDateString('en-US', dateOptions);
 
-          container.innerHTML = `
-            <div class="card">
-              <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle Theme" title="Toggle Theme">${themeIcon}</button>
-              <div class="location-name">${loc.name}</div>
-              <div class="date">${todayDate}</div>
-              <div class="weather-icon">${icon}</div>
-              <div class="current-temp">${currentTemp}°</div>
-              <div class="minmax-temp">H: ${maxTemp}° | L: ${minTemp}°</div>
-            </div>
-          `;
-        } catch (error) {
-          console.error(`Error fetching data for ${loc.name}:`, error);
-          container.innerHTML = '<div class="loading">Error loading data.</div>';
-        }
+        // Update DOM elements
+        document.getElementById('loc-name').textContent = currentLocation.name;
+        document.getElementById('current-date').textContent = todayDate;
+        document.getElementById('w-icon').textContent = icon;
+        document.getElementById('c-temp').textContent = `${currentTemp}°`;
+        document.getElementById('m-temp').textContent = `H: ${maxTemp}° | L: ${minTemp}°`;
+        
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        document.getElementById('loc-name').textContent = 'Error loading';
+      } finally {
+        loader.classList.remove('active'); // Hide updating state
       }
     }
 
+    // Initial load
     fetchWeather();
-    setInterval(fetchWeather, 1800000); 
+    setInterval(fetchWeather, 1800000); // 30 mins auto update
   </script>
 </body>
 </html>

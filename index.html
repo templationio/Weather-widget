@@ -9,9 +9,9 @@
 
     /* CSS Variables for Dark Theme (Default) */
     :root {
-      --bg-color: #191919; /* Notion Dark Background */
+      --bg-color: #191919;
       --text-color: #ffffff;
-      --card-bg: rgba(255, 255, 255, 0.04); /* Сделали чуть прозрачнее */
+      --card-bg: rgba(255, 255, 255, 0.04);
       --card-border: rgba(255, 255, 255, 0.1);
       --card-shadow: rgba(0, 0, 0, 0.2);
       --minmax-bg: rgba(0, 0, 0, 0.2);
@@ -20,9 +20,9 @@
 
     /* CSS Variables for Light Theme */
     body.light-theme {
-      --bg-color: #ffffff; /* Notion Light Background */
-      --text-color: #37352f; /* Standard Notion light text color */
-      --card-bg: rgba(255, 255, 255, 0.5); /* Тот же эффект стекла для белого фона */
+      --bg-color: #ffffff;
+      --text-color: #37352f;
+      --card-bg: rgba(255, 255, 255, 0.5);
       --card-border: rgba(0, 0, 0, 0.08);
       --card-shadow: rgba(0, 0, 0, 0.06);
       --minmax-bg: rgba(0, 0, 0, 0.05);
@@ -37,7 +37,7 @@
 
     body {
       font-family: 'Inter', sans-serif;
-      background-color: var(--bg-color); /* Применяем фон */
+      background-color: var(--bg-color);
       color: var(--text-color);
       display: flex;
       flex-direction: column;
@@ -46,33 +46,6 @@
       min-height: 100vh;
       overflow: hidden;
       transition: background-color 0.4s ease, color 0.4s ease;
-    }
-
-    /* Theme Toggle Button */
-    .theme-toggle {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      color: var(--text-color);
-      border-radius: 50%;
-      width: 44px;
-      height: 44px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 20px;
-      z-index: 10;
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 12px var(--card-shadow);
-    }
-
-    .theme-toggle:hover {
-      transform: scale(1.08);
     }
 
     /* Container */
@@ -131,18 +104,39 @@
     }
 
     .card {
+      position: relative; /* Для абсолютного позиционирования кнопки внутри */
       background: var(--card-bg);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       border: 1px solid var(--card-border);
       border-radius: 24px;
-      padding: 32px 24px;
+      padding: 32px 24px 28px;
       width: 220px;
       box-shadow: 0 8px 32px 0 var(--card-shadow);
       display: flex;
       flex-direction: column;
       align-items: center;
       transition: all 0.4s ease;
+    }
+
+    /* Minimalist Theme Toggle Button Inside Card */
+    .theme-toggle {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      background: transparent;
+      border: none;
+      font-size: 15px;
+      opacity: 0.3;
+      cursor: pointer;
+      transition: opacity 0.3s ease, transform 0.2s ease;
+      padding: 4px;
+      z-index: 10;
+    }
+
+    .theme-toggle:hover {
+      opacity: 1;
+      transform: scale(1.15);
     }
 
     /* Typography */
@@ -211,8 +205,6 @@
 </head>
 <body>
 
-  <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Theme">☀️</button>
-
   <div class="widget-container">
     <div class="blob blob-1"></div>
     <div class="blob blob-2"></div>
@@ -226,27 +218,28 @@
 
   <script>
     // --- THEME SWITCHER LOGIC ---
-    const themeToggle = document.getElementById('theme-toggle');
-    const body = document.body;
+    let isLightMode = localStorage.getItem('notion-widget-theme') === 'light';
 
-    const savedTheme = localStorage.getItem('notion-widget-theme');
-    if (savedTheme === 'light') {
-      body.classList.add('light-theme');
-      themeToggle.textContent = '🌙';
-    } else {
-      themeToggle.textContent = '☀️';
+    function applyTheme() {
+      if (isLightMode) {
+        document.body.classList.add('light-theme');
+      } else {
+        document.body.classList.remove('light-theme');
+      }
+      // Обновляем иконку кнопки, если она уже отрендерена
+      const btn = document.querySelector('.theme-toggle');
+      if (btn) btn.textContent = isLightMode ? '🌙' : '☀️';
     }
 
-    themeToggle.addEventListener('click', () => {
-      body.classList.toggle('light-theme');
-      if (body.classList.contains('light-theme')) {
-        localStorage.setItem('notion-widget-theme', 'light');
-        themeToggle.textContent = '🌙'; 
-      } else {
-        localStorage.setItem('notion-widget-theme', 'dark');
-        themeToggle.textContent = '☀️'; 
-      }
-    });
+    // Глобальная функция для вызова по клику
+    window.toggleTheme = function() {
+      isLightMode = !isLightMode;
+      localStorage.setItem('notion-widget-theme', isLightMode ? 'light' : 'dark');
+      applyTheme();
+    };
+
+    // Применяем тему при загрузке
+    applyTheme();
 
     // --- WEATHER LOGIC ---
     const locations = [
@@ -269,7 +262,12 @@
 
     async function fetchWeather() {
       const container = document.getElementById('cards-container');
-      container.innerHTML = ''; 
+      
+      // Не очищаем весь контейнер, если там уже есть карточка, чтобы кнопка не моргала,
+      // но для первого раза очищаем loader
+      if (container.querySelector('.loading')) {
+        container.innerHTML = ''; 
+      }
 
       for (const loc of locations) {
         try {
@@ -282,17 +280,20 @@
           const minTemp = Math.round(data.daily.temperature_2m_min[0]);
           const weatherCode = data.current_weather.weathercode;
           const icon = getWeatherIcon(weatherCode);
+          
+          const themeIcon = isLightMode ? '🌙' : '☀️';
 
-          const card = document.createElement('div');
-          card.className = 'card';
-          card.innerHTML = `
-            <div class="location-name">${loc.name}</div>
-            <div class="date">${todayDate}</div>
-            <div class="weather-icon">${icon}</div>
-            <div class="current-temp">${currentTemp}°</div>
-            <div class="minmax-temp">H: ${maxTemp}° | L: ${minTemp}°</div>
+          // Обновляем карточку (перерисовываем содержимое)
+          container.innerHTML = `
+            <div class="card">
+              <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle Theme" title="Toggle Theme">${themeIcon}</button>
+              <div class="location-name">${loc.name}</div>
+              <div class="date">${todayDate}</div>
+              <div class="weather-icon">${icon}</div>
+              <div class="current-temp">${currentTemp}°</div>
+              <div class="minmax-temp">H: ${maxTemp}° | L: ${minTemp}°</div>
+            </div>
           `;
-          container.appendChild(card);
         } catch (error) {
           console.error(`Error fetching data for ${loc.name}:`, error);
           container.innerHTML = '<div class="loading">Error loading data.</div>';

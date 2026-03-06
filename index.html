@@ -7,26 +7,26 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
 
-    /* Базовые переменные (Светлая тема под белый фон Notion) */
+    /* CSS Variables for Dark Theme (Default) */
     :root {
-      --text-color: #37352f; /* Классический темный цвет текста Notion */
-      --card-bg: rgba(255, 255, 255, 0.6);
-      --card-border: rgba(0, 0, 0, 0.1);
-      --card-shadow: rgba(0, 0, 0, 0.05);
-      --minmax-bg: rgba(0, 0, 0, 0.06);
-      --blob-opacity: 0.5;
+      --bg-color: #191919; /* Notion Dark Background */
+      --text-color: #ffffff;
+      --card-bg: rgba(255, 255, 255, 0.04); /* Сделали чуть прозрачнее */
+      --card-border: rgba(255, 255, 255, 0.1);
+      --card-shadow: rgba(0, 0, 0, 0.2);
+      --minmax-bg: rgba(0, 0, 0, 0.2);
+      --blob-opacity: 0.6;
     }
 
-    /* Автоматическое переключение на Темную тему */
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --text-color: #ffffff;
-        --card-bg: rgba(255, 255, 255, 0.08);
-        --card-border: rgba(255, 255, 255, 0.2);
-        --card-shadow: rgba(0, 0, 0, 0.15);
-        --minmax-bg: rgba(0, 0, 0, 0.2);
-        --blob-opacity: 0.7;
-      }
+    /* CSS Variables for Light Theme */
+    body.light-theme {
+      --bg-color: #ffffff; /* Notion Light Background */
+      --text-color: #37352f; /* Standard Notion light text color */
+      --card-bg: rgba(255, 255, 255, 0.5); /* Тот же эффект стекла для белого фона */
+      --card-border: rgba(0, 0, 0, 0.08);
+      --card-shadow: rgba(0, 0, 0, 0.06);
+      --minmax-bg: rgba(0, 0, 0, 0.05);
+      --blob-opacity: 0.4;
     }
 
     * {
@@ -37,8 +37,7 @@
 
     body {
       font-family: 'Inter', sans-serif;
-      /* Абсолютно прозрачный фон */
-      background-color: transparent !important; 
+      background-color: var(--bg-color); /* Применяем фон */
       color: var(--text-color);
       display: flex;
       flex-direction: column;
@@ -46,10 +45,37 @@
       align-items: center;
       min-height: 100vh;
       overflow: hidden;
-      transition: color 0.4s ease;
+      transition: background-color 0.4s ease, color 0.4s ease;
     }
 
-    /* Контейнер */
+    /* Theme Toggle Button */
+    .theme-toggle {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text-color);
+      border-radius: 50%;
+      width: 44px;
+      height: 44px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      z-index: 10;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px var(--card-shadow);
+    }
+
+    .theme-toggle:hover {
+      transform: scale(1.08);
+    }
+
+    /* Container */
     .widget-container {
       position: relative;
       width: 100%;
@@ -119,7 +145,7 @@
       transition: all 0.4s ease;
     }
 
-    /* Типографика */
+    /* Typography */
     .location-name {
       font-size: 16px;
       font-weight: 600;
@@ -185,6 +211,8 @@
 </head>
 <body>
 
+  <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Theme">☀️</button>
+
   <div class="widget-container">
     <div class="blob blob-1"></div>
     <div class="blob blob-2"></div>
@@ -197,6 +225,29 @@
   </div>
 
   <script>
+    // --- THEME SWITCHER LOGIC ---
+    const themeToggle = document.getElementById('theme-toggle');
+    const body = document.body;
+
+    const savedTheme = localStorage.getItem('notion-widget-theme');
+    if (savedTheme === 'light') {
+      body.classList.add('light-theme');
+      themeToggle.textContent = '🌙';
+    } else {
+      themeToggle.textContent = '☀️';
+    }
+
+    themeToggle.addEventListener('click', () => {
+      body.classList.toggle('light-theme');
+      if (body.classList.contains('light-theme')) {
+        localStorage.setItem('notion-widget-theme', 'light');
+        themeToggle.textContent = '🌙'; 
+      } else {
+        localStorage.setItem('notion-widget-theme', 'dark');
+        themeToggle.textContent = '☀️'; 
+      }
+    });
+
     // --- WEATHER LOGIC ---
     const locations = [
       { id: 'berlin', name: 'Berlin', lat: 52.5200, lon: 13.4050 }
@@ -206,13 +257,13 @@
     const todayDate = new Date().toLocaleDateString('en-US', dateOptions);
 
     function getWeatherIcon(code) {
-      if (code === 0) return '☀️'; // Clear
-      if (code === 1 || code === 2) return '🌤️'; // Partly cloudy
-      if (code === 3) return '☁️'; // Overcast
-      if (code >= 45 && code <= 48) return '🌫️'; // Fog
-      if (code >= 51 && code <= 67) return '🌧️'; // Rain
-      if (code >= 71 && code <= 82) return '❄️'; // Snow
-      if (code >= 95) return '⛈️'; // Thunderstorm
+      if (code === 0) return '☀️'; 
+      if (code === 1 || code === 2) return '🌤️'; 
+      if (code === 3) return '☁️'; 
+      if (code >= 45 && code <= 48) return '🌫️'; 
+      if (code >= 51 && code <= 67) return '🌧️'; 
+      if (code >= 71 && code <= 82) return '❄️'; 
+      if (code >= 95) return '⛈️'; 
       return '🌡️';
     }
 
@@ -250,7 +301,7 @@
     }
 
     fetchWeather();
-    setInterval(fetchWeather, 1800000); // 30 mins update
+    setInterval(fetchWeather, 1800000); 
   </script>
 </body>
 </html>

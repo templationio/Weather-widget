@@ -77,18 +77,17 @@
       border: 1px solid var(--card-border);
       border-radius: 24px;
       width: 220px;
-      min-height: 260px;
+      min-height: 280px; /* Чуть увеличил для футера */
       box-shadow: 0 8px 32px 0 var(--card-shadow);
       transition: all 0.4s ease;
-      margin-bottom: 24px;
     }
 
     /* --- LIQUID BACKGROUND (STRICTLY INSIDE CARD) --- */
     .card-background {
       position: absolute;
       inset: 0;
-      border-radius: inherit; /* Повторяет скругления карточки */
-      overflow: hidden; /* Обрезает пятна, выходящие за края карточки */
+      border-radius: inherit; 
+      overflow: hidden; 
       z-index: 0;
     }
 
@@ -102,7 +101,7 @@
     }
 
     body.light-theme .blob {
-      opacity: 0.35; /* В светлой теме пятна мягче */
+      opacity: 0.35; 
     }
 
     .blob-1 {
@@ -131,11 +130,11 @@
     /* --- CONTENT INSIDE CARD --- */
     .card-content {
       position: relative;
-      z-index: 1; /* Содержимое поверх пятен */
+      z-index: 1; 
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 60px 24px 28px; /* Отступ сверху для кнопок */
+      padding: 60px 24px 20px; /* Уменьшил нижний отступ */
       height: 100%;
     }
 
@@ -197,7 +196,7 @@
     .search-wrapper.active .search-btn {
       border: none;
       background: transparent;
-      transform: scale(1); /* Убираем эффект hover когда открыто */
+      transform: scale(1); 
     }
 
     .search-input {
@@ -263,7 +262,6 @@
       background: var(--toggle-hover);
     }
 
-    /* Custom Scrollbar for results */
     .search-results::-webkit-scrollbar { width: 4px; }
     .search-results::-webkit-scrollbar-thumb { background: var(--toggle-border); border-radius: 4px; }
 
@@ -313,18 +311,19 @@
       transition: background 0.4s ease;
     }
 
-    /* Footer */
+    /* Footer - Now Inside Card */
     .footer {
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 300;
       letter-spacing: 0.5px;
-      opacity: 0.5;
-      z-index: 1;
+      opacity: 0.6;
+      margin-top: 24px; /* Отталкиваем от температуры */
+      text-align: center;
       transition: opacity 0.3s ease;
     }
 
     .footer:hover {
-      opacity: 0.8;
+      opacity: 0.9;
     }
 
     /* Loader inside card */
@@ -380,11 +379,12 @@
         <div class="weather-icon" id="w-icon">🌡️</div>
         <div class="current-temp" id="c-temp">--°</div>
         <div class="minmax-temp" id="m-temp">H: --° | L: --°</div>
+        
+        <div class="footer">Powered by templation.io</div>
       </div>
       
     </div>
 
-    <div class="footer">Powered by templation.io</div>
   </div>
 
   <script>
@@ -440,7 +440,6 @@
         return;
       }
 
-      // Delay API call until user stops typing
       searchTimeout = setTimeout(async () => {
         try {
           const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=5&language=en&format=json`);
@@ -452,13 +451,12 @@
             data.results.forEach(city => {
               const div = document.createElement('div');
               div.className = 'result-item';
-              // Display format: City, Country
               div.textContent = `${city.name}${city.country ? ', ' + city.country : ''}`;
               
               div.onclick = () => {
                 currentLocation = { name: city.name, lat: city.latitude, lon: city.longitude };
-                toggleSearch(); // Close search bar
-                fetchWeather(); // Update weather
+                toggleSearch(); 
+                fetchWeather(); 
               };
               
               resultsContainer.appendChild(div);
@@ -474,10 +472,9 @@
         } catch (e) {
           console.error('Search error', e);
         }
-      }, 500); // 500ms debounce
+      }, 500); 
     };
 
-    // Close search if clicked outside
     document.addEventListener('click', (e) => {
       const searchContainer = document.querySelector('.search-container');
       const results = document.getElementById('search-results');
@@ -503,7 +500,7 @@
 
     async function fetchWeather() {
       const loader = document.getElementById('loader');
-      loader.classList.add('active'); // Show updating state
+      loader.classList.add('active'); 
 
       try {
         const url = `https://api.open-meteo.com/v1/forecast?latitude=${currentLocation.lat}&longitude=${currentLocation.lon}&current_weather=true&daily=temperature_2m_max,temperature_2m_min&timezone=auto`;
@@ -518,7 +515,6 @@
         
         const todayDate = new Date().toLocaleDateString('en-US', dateOptions);
 
-        // Update DOM elements
         document.getElementById('loc-name').textContent = currentLocation.name;
         document.getElementById('current-date').textContent = todayDate;
         document.getElementById('w-icon').textContent = icon;
@@ -529,13 +525,12 @@
         console.error('Error fetching data:', error);
         document.getElementById('loc-name').textContent = 'Error loading';
       } finally {
-        loader.classList.remove('active'); // Hide updating state
+        loader.classList.remove('active'); 
       }
     }
 
-    // Initial load
     fetchWeather();
-    setInterval(fetchWeather, 1800000); // 30 mins auto update
+    setInterval(fetchWeather, 1800000); 
   </script>
 </body>
 </html>
